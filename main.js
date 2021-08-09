@@ -13,24 +13,43 @@ class Page {
     }
 }
 
-
 var pageList = [];
 var fileName = 'ranking.csv';
 var minitue = '分前';
 var hours = '時間前';
 var days = '日前'
 var postedTime;
+var lastPageNum = 0;
+var lastDay = 3 * 24;
 
-GetPosts();
+var page;
+var posts;
 
-function GetPosts() {
+var host_url = location.host;
 
-    var posts = [...document.querySelectorAll('.css-rpl3vx')];
 
+
+if (host_url === "hide.ac") {
+    Init();
+}
+
+function Init() {
     // Add colum names
     pageList.push(['title', 'url', 'userName', 'postedTime', 'likeNum', 'comments', 'openedBag', 'jpyc', 'doggod']);
 
-    posts.map(elm => {
+    GetPosts();
+}
+
+
+function GetPosts() {
+    posts = [...document.querySelectorAll('.css-rpl3vx')];
+    AddPosts();
+}
+
+function AddPosts() {
+    posts.forEach(function (elm, index) {
+
+        if (index < lastPageNum) return;
 
         let title = elm.querySelector('.css-1pysja1').textContent;
         let url = elm.querySelector('.css-1x1vdex').href;
@@ -39,6 +58,7 @@ function GetPosts() {
         let userName = userObj.querySelector('.css-7jgt70').textContent;
         let postedTimeString = userObj.querySelector('.css-1pysja1').textContent;
 
+        // change to hour unit
         if (postedTimeString.includes(minitue)) {
             postedTime = +(postedTimeString.replace(minitue, '')) / 60;
         }
@@ -52,32 +72,62 @@ function GetPosts() {
             console.error('There is not posted time.')
         }
 
+        if (postedTime > lastDay) return; // should be break
+
+
         let likeNum = +(elm.querySelector('.css-1fyivyj') || { textContent: 0 }).textContent;
         let commentsNum = +(elm.querySelector('.css-px5w92') || { textContent: 0 }).textContent;
         let openedBag = +(elm.querySelector('.css-1gi2xsa') || { textContent: 0 }).textContent;
 
         let values = [...elm.querySelectorAll('.css-n8rg3o')];
 
-        var page;
-        if (values.length == 2) { // has jpyc and doggod
+        // has jpyc and doggod
+        if (values.length == 2) {
             let jpycValue = +(values[0].textContent);
             var doggodValue = +(values[1].textContent);
             page = new Page(title, url, userName, postedTime, likeNum, commentsNum, openedBag, jpycValue, doggodValue);
         }
-        else if (values.length == 1) { // has only jpyc
+        // has only jpyc
+        else if (values.length == 1) {
             let jpycValue = +(values[0]).textContent;
             page = new Page(title, url, userName, postedTime, likeNum, commentsNum, openedBag, jpycValue);
         }
+        // has no token
         else {
             page = new Page(title, url, userName, postedTime, likeNum, commentsNum, openedBag);
         }
-        
+
         pageList.push([page.title, page.url, page.userName, page.postedTime, page.likeNum, page.commentNum, page.openedBag, page.jpycNum, page.doggodNum]);
 
     });
 
-    CreateAndDownloadCsv(pageList);
+    lastPageNum = posts.length;
+
+    if (page.postedTime < lastDay) {
+        NextPage();
+        setTimeout(() => {
+            GetPosts();
+        }, 500);
+    }
+    else {
+        console.log(pageList);
+        CreateAndDownloadCsv(pageList);
+    }
 }
+
+
+var nextPageButtonElement = "css-wmz95n";
+
+function NextPage() {
+    try {
+        const ele1 = document.getElementsByClassName(nextPageButtonElement);
+        ele1[0].click();
+    } catch (e) {
+        console.error(e);
+    }
+}
+
+
 
 
 function CreateAndDownloadCsv(array) {
@@ -96,43 +146,7 @@ function CreateAndDownloadCsv(array) {
 
 
 
-
-
-
-// ---old func-------------------------------------------------------
-const host_url = location.host;
-
-if (host_url === "hide.ac") { }
-
-
-
-var postElement = "css-rpl3vx";
-var likeElement = "css-1fyivyj";
-
-GetPost();
-
-function GetPost() {
-    let posts = document.getElementsByClassName(postElement);
-
-    // let url = posts[0].children[0].href;
-
-    let likeEle = posts[0].children[0].getElementsByClassName("css-141sx3y");
-    let like = likeEle[0].getElementsByClassName(likeElement);
-
-    console.log(like[0].textContent);
-
-    // console.log(posts.length);
-    // for (let i = 0; i <posts.length; i++) {
-    //     console.log(posts[i]);
-    // }
-}
-
-
-
-
 // ---loader-------------------------------------------------------------
-
-OnBottom();
 
 function OnBottom() {
 
@@ -149,20 +163,8 @@ function OnBottom() {
     }
 }
 
-var nextPageButtonElement = "fas fa-angle-down css-19y7vkx";
 
-function NextPage() {
-    try {
-        const ele1 = document.getElementsByClassName(nextPageButtonElement);
-
-        setTimeout(() => {
-            ele1[0].click();
-        }, 1000);
-    } catch (e) { console.log(e); }
-}
-
-
-OnElementAppeared(nextPageButtonElement, NextPage);
+// OnElementAppeared(nextPageButtonElement, NextPage);
 // https://www.marukin-ad.co.jp/marulog/?p=1891
 function OnElementAppeared(element, callback) {
     $(window).scroll(function () {
@@ -174,10 +176,3 @@ function OnElementAppeared(element, callback) {
         }
     });
 }
-
-
-
-
-// ----------------------------------------------------------------
-
-
