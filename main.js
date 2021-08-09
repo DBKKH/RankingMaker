@@ -1,4 +1,19 @@
 
+class Page {
+    constructor(title, url, userName, postedTime, likeNum = 0, commentNum = 0, openedBag = 0, jpycNum = 0, doggodNum = 0) {
+        this.title = title;
+        this.url = url;
+        this.userName = userName;
+        this.postedTime = postedTime;
+        this.likeNum = likeNum;
+        this.commentNum = commentNum;
+        this.openedBag = openedBag;
+        this.jpycNum = jpycNum;
+        this.doggodNum = doggodNum;
+    }
+}
+
+
 var pageList = [];
 var fileName = 'ranking.csv';
 var minitue = '分前';
@@ -12,6 +27,7 @@ function GetPosts() {
 
     var posts = [...document.querySelectorAll('.css-rpl3vx')];
 
+    // Add colum names
     pageList.push(['title', 'url', 'userName', 'postedTime', 'likeNum', 'comments', 'openedBag', 'jpyc', 'doggod']);
 
     posts.map(elm => {
@@ -42,24 +58,29 @@ function GetPosts() {
 
         let values = [...elm.querySelectorAll('.css-n8rg3o')];
 
-        if (values.length == 2) {
+        var page;
+        if (values.length == 2) { // has jpyc and doggod
             let jpycValue = +(values[0].textContent);
             var doggodValue = +(values[1].textContent);
-            pageList.push([title, url, userName, postedTime, likeNum, commentsNum, openedBag, jpycValue, doggodValue]);
+            page = new Page(title, url, userName, postedTime, likeNum, commentsNum, openedBag, jpycValue, doggodValue);
         }
-        else if (values.length == 1) {
+        else if (values.length == 1) { // has only jpyc
             let jpycValue = +(values[0]).textContent;
-            pageList.push([title, url, userName, postedTime, likeNum, commentsNum, openedBag, jpycValue, 0]);
+            page = new Page(title, url, userName, postedTime, likeNum, commentsNum, openedBag, jpycValue);
         }
         else {
-            pageList.push([title, url, userName, postedTime, likeNum, commentsNum, openedBag, 0, 0]);
+            page = new Page(title, url, userName, postedTime, likeNum, commentsNum, openedBag);
         }
+        
+        pageList.push([page.title, page.url, page.userName, page.postedTime, page.likeNum, page.commentNum, page.openedBag, page.jpycNum, page.doggodNum]);
+
     });
 
-    createAndDownloadCsv(pageList);
+    CreateAndDownloadCsv(pageList);
 }
 
-function createAndDownloadCsv(array) {
+
+function CreateAndDownloadCsv(array) {
 
     let bom = new Uint8Array([0xEF, 0xBB, 0xBF]);
     let data = array.map((record) => record.join('\t')).join('\r\n');
@@ -158,18 +179,5 @@ function OnElementAppeared(element, callback) {
 
 
 // ----------------------------------------------------------------
-
-class Page {
-    constructor(title, url, userName, postedTime, likeNum = 0, commentNum = 0, jpycNum = 0, doggodNum = 0) {
-        this.title = title;
-        this.url = url;
-        this.userName = userName;
-        this.postedTime = postedTime;
-        this.likeNum = likeNum;
-        this.commentNum = commentNum;
-        this.jpycNum = jpycNum;
-        this.doggodNum = doggodNum;
-    }
-}
 
 
