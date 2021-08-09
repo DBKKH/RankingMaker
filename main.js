@@ -62,7 +62,7 @@ function GetPosts() {
 function createAndDownloadCsv(array) {
 
     let bom = new Uint8Array([0xEF, 0xBB, 0xBF]);
-    let data = array.map((record) => record.join(', ')).join('\r\n');
+    let data = array.map((record) => record.join('\t')).join('\r\n');
 
     let blob = new Blob([bom, data], { 'type': 'text/csv' });
 
