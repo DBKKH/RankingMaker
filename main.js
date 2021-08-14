@@ -1,4 +1,3 @@
-
 class Page {
     constructor(title, url, userName, postedTime, likeNum = 0, commentNum = 0, openedBag = 0, jpycNum = 0, doggodNum = 0) {
         this.title = title;
@@ -13,20 +12,20 @@ class Page {
     }
 }
 
-var pageList = [];
+const minitue = '分前';
+const hours = '時間前';
+const days = '日前'
+const lastPageNum = 0;
+const lastDay = 3 * 24;
+
 var fileName = 'ranking.csv';
-var minitue = '分前';
-var hours = '時間前';
-var days = '日前'
+var pageList = [];
 var postedTime;
-var lastPageNum = 0;
-var lastDay = 3 * 24;
 
 var page;
 var posts;
 
 var host_url = location.host;
-
 
 
 if (host_url === "hide.ac") {
