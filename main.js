@@ -15,9 +15,9 @@ class Page {
 const minitue = '分前';
 const hours = '時間前';
 const days = '日前'
-const lastPageNum = 0;
-const lastDay = 3 * 24;
 
+var lastDay;
+var lastPageNum = 0;
 var fileName = 'ranking.csv';
 var pageList = [];
 var postedTime;
@@ -33,10 +33,18 @@ if (host_url === "hide.ac") {
 }
 
 function Init() {
+    InitDate();
+
     // Add colum names
     pageList.push(['title', 'url', 'userName', 'postedTime', 'likeNum', 'comments', 'openedBag', 'jpyc', 'doggod']);
 
     GetPosts();
+}
+
+function InitDate(){
+    let dt = new Date();
+    let date = dt.getDate() - 1;
+    lastDay = date * 24;
 }
 
 
@@ -51,6 +59,11 @@ function AddPosts() {
         if (index < lastPageNum) return;
 
         let title = elm.querySelector('.css-1pysja1').textContent;
+
+        if(title.charAt(0).includes('#')){
+            title = title.replace('#', '＃')
+        }
+
         let url = elm.querySelector('.css-1x1vdex').href;
 
         let userObj = elm.querySelector('.css-1ha9j9m');
@@ -125,8 +138,6 @@ function NextPage() {
         console.error(e);
     }
 }
-
-
 
 
 function CreateAndDownloadCsv(array) {
